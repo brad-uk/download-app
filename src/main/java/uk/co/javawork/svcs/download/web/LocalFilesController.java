@@ -1,8 +1,9 @@
 package uk.co.javawork.svcs.download.web;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -44,7 +45,8 @@ public class LocalFilesController {
 	
 	private Map<String, Long> listFiles(){
 
-		Map<String, Long> files = new HashMap<>();
+		
+		Map<String, Long> files = new TreeMap<>(new CaseUnsensitiveComparator());
 		
 		File tmpDir = new File(storagePath);
 		File[] all = tmpDir.listFiles();
@@ -95,5 +97,17 @@ public class LocalFilesController {
 		}
 		
 		return listLocalFilesHtml(req);
+	}
+	
+	private class CaseUnsensitiveComparator implements Comparator<String> {
+		
+		@Override
+		public int compare(String s1, String s2) {
+			
+			String l1 = s1.toLowerCase();
+			String l2 = s2.toLowerCase();
+			
+			return l1.compareTo(l2);
+		}
 	}
 }
