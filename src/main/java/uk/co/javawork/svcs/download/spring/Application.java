@@ -17,8 +17,11 @@ import akka.actor.Props;
 @ComponentScan({"uk.co.javawork.svcs.download.spring", "uk.co.javawork.svcs.download.web"})
 public class Application {
 	
-	@Value("${storage-path}")
-	private String storagePath;
+	@Value("${tmp-dir}")
+	private String tmpDirPath;	
+	
+	@Value("${storage-dir}")
+	private String storageDirPath;
 	
 	@Bean
 	public ActorSystem actorSys(){
@@ -27,8 +30,11 @@ public class Application {
 	
 	@Bean
 	public ActorRef downloadManager(ActorSystem sys){
-		File storageDir = new File(storagePath);
-		return sys.actorOf(Props.create(DownloadManager.class, storageDir), "download-manager");
+		
+		File tmpDir = new File(tmpDirPath);
+		File storageDir = new File(storageDirPath);
+		
+		return sys.actorOf(Props.create(DownloadManager.class, tmpDir, storageDir), "download-manager");
 	}
 	
 	public static void main(String[] args) {

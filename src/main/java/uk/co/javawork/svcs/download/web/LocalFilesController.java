@@ -23,7 +23,7 @@ public class LocalFilesController {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(LocalFilesController.class);
 	
-	@Value("${storage-path}")
+	@Value("${storage-dir}")
 	private String storagePath;
 
 	@RequestMapping(value="/files-json", method={RequestMethod.GET}, produces={"application/json"})

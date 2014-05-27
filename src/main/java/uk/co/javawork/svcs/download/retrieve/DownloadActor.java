@@ -5,11 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
-import org.apache.http.client.fluent.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
@@ -23,13 +24,17 @@ public class DownloadActor extends UntypedActor {
 	
 	private static final int BUFFER_SIZE = 1024 * 8;
 
+	private final File tmpDir;
 	private final File storageDir;
 	
-	private File localFile;
+	private File tmpFile;
+	private File completeFile;
+	
 	private URLConnection conn;
 	private long size;
 	
-	public DownloadActor(File storageDir){
+	public DownloadActor(File tmpDir, File storageDir){
+		this.tmpDir = tmpDir;
 		this.storageDir = storageDir;
 	}
 
@@ -43,7 +48,7 @@ public class DownloadActor extends UntypedActor {
 			LOGGER.info("Download remote file: " + u.toString());
 
 			initDownload(u);
-			DownloadInitResponse resp = new DownloadInitResponse(localFile.getName(), size);
+			DownloadInitResponse resp = new DownloadInitResponse(tmpFile.getName(), size);
 			getSender().tell(resp, self());
 		}
 		
@@ -66,10 +71,11 @@ public class DownloadActor extends UntypedActor {
 		String name = sf.substring(sf.lastIndexOf("/") + 1);
 		name= name.replaceAll("%20", "-");
 		
-		localFile = new File(storageDir, name);
+		tmpFile = new File(tmpDir, name);
+		completeFile = new File(storageDir, name);
 		
-		if(localFile.exists() && !localFile.canWrite()){
-			throw new IOException("Unable to overwrite existing local file " + localFile.getPath());
+		if(tmpFile.exists() && !tmpFile.canWrite()){
+			throw new IOException("Unable to overwrite existing tmp file " + tmpFile.getPath());
 		}
 		
 		conn = u.openConnection();
@@ -80,7 +86,7 @@ public class DownloadActor extends UntypedActor {
 		
 		try(InputStream in = conn.getInputStream()){
 			
-			try(OutputStream fOut = new FileOutputStream(localFile)){
+			try(OutputStream fOut = new FileOutputStream(tmpFile)){
 			
 				byte[] buff = new byte[BUFFER_SIZE];
 				long total = 0;
@@ -105,16 +111,15 @@ public class DownloadActor extends UntypedActor {
 					}
 				}
 				
+				Path source = tmpFile.toPath();
+				Path target = completeFile.toPath();
+				Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+				
 				if(LOGGER.isInfoEnabled()){
 					LOGGER.info("Download complete, size copied: " + total);
 				}
 			}
 		}
-	}
-	
-	private void httpDownload(URI target) throws IOException {
-		
-		Request.Get(target).connectTimeout(5000).socketTimeout(5000).execute().saveContent(localFile);
 	}
 	
 	@Override

@@ -1,15 +1,11 @@
 package uk.co.javawork.svcs.download.retrieve;
 
 import static akka.actor.SupervisorStrategy.escalate;
-import static akka.actor.SupervisorStrategy.restart;
 import static akka.actor.SupervisorStrategy.stop;
-import static akka.actor.SupervisorStrategy.resume;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-
-import org.springframework.web.socket.WebSocketSession;
 
 import scala.concurrent.duration.Duration;
 import akka.actor.ActorRef;
@@ -17,15 +13,17 @@ import akka.actor.ActorSelection;
 import akka.actor.OneForOneStrategy;
 import akka.actor.Props;
 import akka.actor.SupervisorStrategy;
-import akka.actor.UntypedActor;
 import akka.actor.SupervisorStrategy.Directive;
+import akka.actor.UntypedActor;
 import akka.japi.Function;
 
 public class DownloadManager extends UntypedActor {
 
+	private final File tmpDir;
 	private final File storageDir;
 	
-	public DownloadManager(File storageDir){
+	public DownloadManager(File tmpDir, File storageDir){
+		this.tmpDir = tmpDir;
 		this.storageDir = storageDir;
 	}
 	
@@ -35,7 +33,7 @@ public class DownloadManager extends UntypedActor {
 		if(msg instanceof URL){
 			
 			URL u = (URL)msg;
-			Props p = Props.create(DownloadActor.class, storageDir);
+			Props p = Props.create(DownloadActor.class, tmpDir, storageDir);
 			final String actorName = u.getPath().substring(u.getPath().lastIndexOf("/") + 1);
 			ActorRef ref = getContext().actorOf(p, actorName);
 			ref.forward(msg, getContext());

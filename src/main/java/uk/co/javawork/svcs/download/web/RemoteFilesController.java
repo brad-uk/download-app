@@ -35,7 +35,7 @@ public class RemoteFilesController {
 		this.manager = downloadManager;
 	}
 	
-	@Value("${storage-path}")
+	@Value("${storage-dir}")
 	private String storagePath;
 	
 	@RequestMapping(value="/fetch", method={RequestMethod.GET})
