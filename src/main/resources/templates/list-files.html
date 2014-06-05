@@ -9,11 +9,7 @@
     <!--link rel="shortcut icon" href="http://getbootstrap.com/docs-assets/ico/favicon.png"/-->
 
     <title>List files</title>
-
-    <!-- Bootstrap core CSS -->
     <link href="https://javawork.co.uk/css/bootstrap.css" rel="stylesheet"/>
-
-    <!-- Custom styles for this template -->
     <link href="https://javawork.co.uk/css/starter-template.css" rel="stylesheet"/>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -30,8 +26,6 @@
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
             <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/">Home</a>
@@ -51,19 +45,19 @@
 
     <div class="container">
     
-	<ul class="nav nav-pills">
-	  <li class="active"><a href="#">Local Files</a></li>
-	  <li><a th:href="@{~/java/fetch.html}">Fetch Remote</a></li>
-	</ul>
+		<ul class="nav nav-pills">
+		  <li class="active"><a href="#">Local Files</a></li>
+		  <li><a th:href="@{~/java/fetch.html}">Fetch Remote</a></li>
+		</ul>
 	
 		<p/>
 	
 		<p th:if="${infomsg}" class="alert alert-success" th:text="${infomsg}"></p>
 		<p th:if="${errormsg}" class="alert alert-danger" th:text="${errormsg}"></p>
-    
-      <!--form class="form-fetch" role="form" th:action="@{~/java/remote}" method="POST">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-      </form-->
+    	
+    	<!--form class="form-fetch" role="form" th:action="@{~/java/remote}" method="POST">
+    		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+  		</form-->
     
 		<table class="table">
 			<tr><td>File name</td><td>Size (bytes)</td><td></td><td></td></tr>
@@ -71,16 +65,32 @@
         		<td th:text="${file.key}"></td>
         		<td th:text="${file.value}"></td>
         		<td><a th:href="@{'~/java/files/'+${file.key}}" class="btn btn-primary btn-sm">Download</a></td>
-        		<td><a th:href="@{'~/java/delete/'+${file.key}}" class="btn btn-danger btn-sm">Delete</a></td>
+        		<td><a data-href="delete" th:attr="data-href=@{'~/java/delete/'+${file.key}}" data-toggle="modal" data-target="#confirm-delete" href="#" class="btn btn-danger btn-sm">Delete</a></td>
       		</tr>
 		</table>
 
     </div><!-- /.container -->
+    
+	<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">Delete file</div>
+	            <div class="modal-body">Are you sure?</div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	                <a href="#" class="btn btn-danger danger">Delete</a>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="https://javawork.co.uk/js/bootstrap.js"></script>
+    
+	<script>
+		$('#confirm-delete').on('show.bs.modal', function(e) {
+    		$(this).find('.danger').attr('href', $(e.relatedTarget).data('href'));
+		});
+	</script>
 
 </body></html>
