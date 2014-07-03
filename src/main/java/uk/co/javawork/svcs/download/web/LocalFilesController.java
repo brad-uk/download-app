@@ -51,12 +51,17 @@ public class LocalFilesController {
 		File tmpDir = new File(storagePath);
 		File[] all = tmpDir.listFiles();
 		
-		for(File f : all){
-			
-			if(f.canRead() && f.isFile()){
-				files.put(f.getName(), f.length());
+		//just in case the folder doesn't exist
+		if(all != null){
+
+			for(File f : all){
+				
+				if(f.canRead() && f.isFile()){
+					files.put(f.getName(), f.length());
+				}
 			}
 		}
+
 		
 		return files;
 	}
