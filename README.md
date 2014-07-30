@@ -3,7 +3,7 @@
 Download web app
 ================
 
-Useful if you're stuck behind a firewall which won't let you donwload something you need.
+Useful if you're stuck behind a firewall which won't let you download something you need.
 
 Run the app:
 
