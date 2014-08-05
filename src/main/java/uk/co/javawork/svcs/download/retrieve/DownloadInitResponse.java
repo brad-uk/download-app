@@ -1,6 +1,8 @@
 package uk.co.javawork.svcs.download.retrieve;
 
-public class DownloadInitResponse {
+import java.io.Serializable;
+
+public class DownloadInitResponse implements Serializable  {
 
 	private final long size;
 	private final String localFileName;

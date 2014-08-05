@@ -1,22 +1,23 @@
 package uk.co.javawork.svcs.download.retrieve;
 
-import org.springframework.web.socket.WebSocketSession;
+import java.io.Serializable;
 
-public class WebSocketInitRequest {
+public class WebSocketInitRequest implements Serializable {
 
-	private final String filename;
-	private final WebSocketSession session;
+	private static final long serialVersionUID = 7940030147361737560L;
 	
-	public WebSocketInitRequest(String fileName, WebSocketSession session){
+	private final String filename;
+	
+	public WebSocketInitRequest(String fileName){
 		this.filename = fileName;
-		this.session = session;
 	}
 
 	public String getFilename() {
 		return filename;
 	}
-
-	public WebSocketSession getSession() {
-		return session;
+	
+	@Override
+	public String toString() {
+		return "WebSocketInitRequest [filename=" + filename + "]";
 	}
 }

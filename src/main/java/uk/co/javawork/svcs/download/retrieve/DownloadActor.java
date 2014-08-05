@@ -14,8 +14,8 @@ import java.nio.file.StandardCopyOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
+import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 
 public class DownloadActor extends UntypedActor {
@@ -41,6 +41,8 @@ public class DownloadActor extends UntypedActor {
 	@Override
 	public void onReceive(Object msg) throws Exception {
 
+		LOGGER.debug("download actor received: " + msg);
+		
 		if(msg instanceof URL){
 
 			URL u = (URL)msg;
@@ -55,9 +57,12 @@ public class DownloadActor extends UntypedActor {
 		if(msg instanceof WebSocketInitRequest){
 			
 			WebSocketInitRequest req = (WebSocketInitRequest)msg;
-			WebSocketSession session = req.getSession();
+			String fileName = req.getFilename();
 			
-			doDownload(size, session);
+			LOGGER.debug("doDownload...");
+			
+			ActorRef wsSender = getSender();
+			doDownload(size, wsSender);
 			
 			LOGGER.info("download complete, stopping...");
 			
@@ -66,6 +71,8 @@ public class DownloadActor extends UntypedActor {
 	}
 	
 	private void initDownload(URL u) throws IOException {
+		
+		LOGGER.debug("init download: " + u.getPath());
 		
 		String sf = u.getFile();
 		String name = sf.substring(sf.lastIndexOf("/") + 1);
@@ -82,43 +89,47 @@ public class DownloadActor extends UntypedActor {
 		size = conn.getContentLengthLong();
 	}
 	
-	private void doDownload(long targetSize, WebSocketSession session) throws IOException{
+	private void doDownload(long targetSize, ActorRef wsSender) throws IOException{
+		
+		long total = 0;
+		int readSize = 0;
+		int currPercent = 0;
 		
 		try(InputStream in = conn.getInputStream()){
 			
 			try(OutputStream fOut = new FileOutputStream(tmpFile)){
+				
+				LOGGER.debug("streaming download data");
 			
 				byte[] buff = new byte[BUFFER_SIZE];
-				long total = 0;
-				int readSize = 0;
-				int currPercent = 0;
 				
 				while((readSize = in.read(buff)) > -1){
 					
 					fOut.write(buff, 0, readSize);
 					total += readSize;
 					
-					if(session != null && session.isOpen()){
+					if(wsSender != null){
 						
 						float percent = (total * 100) / targetSize;
 						int m = (int)percent;
 						
 						if(m > currPercent){
 							currPercent = m;
-							TextMessage msg = new TextMessage(Integer.toString(m));
-							session.sendMessage(msg);
+							//TextMessage msg = new TextMessage(Integer.toString(m));
+							Integer msg = Integer.valueOf(m);
+							wsSender.tell(msg, getSelf());
 						}
 					}
 				}
-				
-				Path source = tmpFile.toPath();
-				Path target = completeFile.toPath();
-				Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
-				
-				if(LOGGER.isInfoEnabled()){
-					LOGGER.info("Download complete, size copied: " + total);
-				}
 			}
+		}
+		
+		Path source = tmpFile.toPath();
+		Path target = completeFile.toPath();
+		Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+		
+		if(LOGGER.isInfoEnabled()){
+			LOGGER.info("Download complete, size copied: " + total);
 		}
 	}
 	

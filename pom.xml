@@ -13,10 +13,10 @@
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.0.2.RELEASE</version>
 	</parent>
-	
-<!--properties>
-    <tomcat.version>8.0.3</tomcat.version>
-</properties-->
+
+	<properties>
+		<akka.version>2.3.4</akka.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -75,25 +75,28 @@
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-actor_2.11</artifactId>
-			<version>2.3.2</version>
+			<version>${akka.version}</version>
 		</dependency>
-<dependency>
-	<groupId>org.apache.httpcomponents</groupId>
-	<artifactId>fluent-hc</artifactId>
-	<version>4.3.3</version>
-</dependency>
+		<dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-cluster_2.11</artifactId>
+			<version>${akka.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-contrib_2.11</artifactId>
+			<version>${akka.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>4.3.3</version>
+		</dependency>
 	</dependencies>
 
-	<repositories>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>http://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+	<!--repositories> <repository> <id>spring-milestones</id> <name>Spring Milestones</name> 
+		<url>http://repo.spring.io/milestone</url> <snapshots> <enabled>false</enabled> 
+		</snapshots> </repository> </repositories -->
 
 	<pluginRepositories>
 		<pluginRepository>

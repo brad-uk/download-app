@@ -11,7 +11,12 @@ import org.springframework.context.annotation.ComponentScan;
 import uk.co.javawork.svcs.download.retrieve.DownloadManager;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.PoisonPill;
 import akka.actor.Props;
+import akka.contrib.pattern.ClusterSingletonManager;
+
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 @EnableAutoConfiguration
 @ComponentScan({"uk.co.javawork.svcs.download.spring", "uk.co.javawork.svcs.download.web"})
@@ -25,16 +30,23 @@ public class Application {
 	
 	@Bean
 	public ActorSystem actorSys(){
-		return ActorSystem.create("sys");
-	}
-	
-	@Bean
-	public ActorRef downloadManager(ActorSystem sys){
+		
+		
+		Config clusterConfig = ConfigFactory.load();
+		
+		ActorSystem sys =  ActorSystem.create("ClusterSystem", clusterConfig);
 		
 		File tmpDir = new File(tmpDirPath);
 		File storageDir = new File(storageDirPath);
 		
-		return sys.actorOf(Props.create(DownloadManager.class, tmpDir, storageDir), "download-manager");
+		Props managerProps = Props.create(DownloadManager.class, tmpDir, storageDir);
+		Props clusterSingletonProps = ClusterSingletonManager.defaultProps(managerProps, 
+																	"manager", 
+																	PoisonPill.getInstance(), 
+																	"manager-role");
+		ActorRef manager = sys.actorOf(clusterSingletonProps, "singleton");
+		
+		return sys;
 	}
 	
 	public static void main(String[] args) {

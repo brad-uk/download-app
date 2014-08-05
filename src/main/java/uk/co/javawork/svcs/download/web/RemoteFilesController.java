@@ -21,6 +21,9 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 import uk.co.javawork.svcs.download.retrieve.DownloadInitResponse;
 import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.contrib.pattern.ClusterSingletonProxy;
 import akka.pattern.Patterns;
 
 @Controller
@@ -28,13 +31,19 @@ public class RemoteFilesController {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RemoteFilesController.class);
 	
+	private final ActorSystem clusterSystem;
+	
 	private final ActorRef manager;
 	
 	@Autowired
-	public RemoteFilesController(ActorRef downloadManager){
-		this.manager = downloadManager;
+	public RemoteFilesController(ActorSystem sys){
+		
+		this.clusterSystem = sys;
+		
+		Props singletonProps = ClusterSingletonProxy.defaultProps("/user/singleton/manager", "manager-role");
+		manager = clusterSystem.actorOf(singletonProps, "singletonProxy");
 	}
-	
+
 	@Value("${storage-dir}")
 	private String storagePath;
 	
@@ -57,7 +66,7 @@ public class RemoteFilesController {
 		try{
 			
 			final URL u = new URL(url);
-			
+
 			Future<Object> f = Patterns.ask(manager, u, 10000);
 			
 			DownloadInitResponse rspMsg = (DownloadInitResponse)Await.result(f, Duration.create(5, TimeUnit.SECONDS));
@@ -70,7 +79,6 @@ public class RemoteFilesController {
 			
 			//respond to client
 			resp = "/started";
-			
 			
 		}catch(MalformedURLException e){
 			

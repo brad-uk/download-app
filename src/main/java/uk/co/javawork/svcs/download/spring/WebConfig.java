@@ -17,6 +17,7 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
 
 import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
 
 @Configuration
 @EnableWebMvc
@@ -63,8 +64,8 @@ public class WebConfig extends WebMvcConfigurerAdapter implements WebSocketConfi
     }
     
     @Bean
-    public WebsocketHandler websocketHandler(ActorRef downloadManager){
-    	return new WebsocketHandler(downloadManager);
+    public WebsocketHandler websocketHandler(ActorSystem sys){
+    	return new WebsocketHandler(sys);
     }
     
 	private WebsocketHandler wsHandler;

@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import scala.concurrent.duration.Duration;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
@@ -15,9 +18,12 @@ import akka.actor.Props;
 import akka.actor.SupervisorStrategy;
 import akka.actor.SupervisorStrategy.Directive;
 import akka.actor.UntypedActor;
+import akka.contrib.pattern.ClusterReceptionistExtension;
 import akka.japi.Function;
 
 public class DownloadManager extends UntypedActor {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(DownloadManager.class);
 
 	private final File tmpDir;
 	private final File storageDir;
@@ -28,7 +34,16 @@ public class DownloadManager extends UntypedActor {
 	}
 	
 	@Override
+	public void preStart() throws Exception {
+		super.preStart();
+		ClusterReceptionistExtension rec = (ClusterReceptionistExtension)ClusterReceptionistExtension.apply(getContext().system());
+		rec.registerService(getSelf());
+	}
+	
+	@Override
 	public void onReceive(Object msg) throws Exception {
+		
+		LOGGER.debug("manager received: " + msg);
 		
 		if(msg instanceof URL){
 			
