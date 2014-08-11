@@ -13,10 +13,10 @@ import java.nio.file.StandardCopyOption;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.TextMessage;
 
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
+import akka.japi.Procedure;
 
 public class DownloadActor extends UntypedActor {
 	
@@ -41,7 +41,9 @@ public class DownloadActor extends UntypedActor {
 	@Override
 	public void onReceive(Object msg) throws Exception {
 
-		LOGGER.debug("download actor received: " + msg);
+		if(LOGGER.isDebugEnabled()){
+			LOGGER.debug("download actor received: " + msg);
+		}
 		
 		if(msg instanceof URL){
 
@@ -52,21 +54,8 @@ public class DownloadActor extends UntypedActor {
 			initDownload(u);
 			DownloadInitResponse resp = new DownloadInitResponse(tmpFile.getName(), size);
 			getSender().tell(resp, self());
-		}
-		
-		if(msg instanceof WebSocketInitRequest){
 			
-			WebSocketInitRequest req = (WebSocketInitRequest)msg;
-			String fileName = req.getFilename();
-			
-			LOGGER.debug("doDownload...");
-			
-			ActorRef wsSender = getSender();
-			doDownload(size, wsSender);
-			
-			LOGGER.info("download complete, stopping...");
-			
-			getContext().stop(getSelf());
+			getContext().become(download);
 		}
 	}
 	
@@ -142,4 +131,26 @@ public class DownloadActor extends UntypedActor {
 	public void preStart() throws Exception {
 		LOGGER.info("download actor starting");
 	}
+	
+	Procedure<Object> download = new Procedure<Object>() {
+
+		@Override
+		public void apply(Object msg) throws Exception {
+
+			if(msg instanceof WebSocketInitRequest){
+				
+				WebSocketInitRequest req = (WebSocketInitRequest)msg;
+				String fileName = req.getFilename();
+				
+				LOGGER.debug("doDownload...");
+				
+				ActorRef wsSender = getSender();
+				doDownload(size, wsSender);
+				
+				LOGGER.info("download complete, stopping...");
+				
+				getContext().stop(getSelf());
+			}			
+		}
+	};
 }
