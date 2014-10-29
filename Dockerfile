@@ -3,21 +3,45 @@
 #
 FROM debian:latest
 
-RUN apt-get update
-RUN apt-get install -y software-properties-common python-software-properties
+#install wget
+#RUN apt-get -y install wget
 
-# Install java8
-run apt-add-repository -y "deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main"
-run apt-get update
-run echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
-run apt-get install -y oracle-java8-installer
+#server jre 8_25 checksum c3ec171fac394c584a0a5cecb1731efd
+
+#wget oracle jre - get, extract, owenership & clean up
+#RUN wget -nc -O /tmp/server-jre-8u25-linux-x64.tar.gz --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u25-b17/server-jre-8u25-linux-x64.tar.gz && \
+#	tar xzf /tmp/server-jre-8u25-linux-x64.tar.gz -C /opt && \
+#	chown root:root -R /opt/jre1.8.0_25 && \
+#	rm -fr /tmp/server-jre-8u25-linux-x64.tar.gz
+	
+#copy JRE in
+#note COPY can only work on files inside build dir
+COPY server-jre-8u25-linux-x64.tar.gz /tmp/server-jre-8u25-linux-x64.tar.gz
+#extract it, chown & delete up archive
+RUN tar xzf /tmp/server-jre-8u25-linux-x64.tar.gz -C /opt && \
+	chown root:root -R /opt/jdk1.8.0_25 && \
+	rm -fr /tmp/server-jre-8u25-linux-x64.tar.gz
+
+ENV JAVA_HOME /opt/jdk1.8.0_25
+ENV PATH $PATH:$JAVA_HOME/bin
 
 #add ready built app jar
 copy target/download-app-0.0.1-SNAPSHOT.jar /download-app-0.0.1-SNAPSHOT.jar
 
-#run mkdir /downloads	
-#run echo "hello world!" > /downloads/test.txt
-#no need for this, run docker with -v /home/brad/Downlaods:/downloads to map host dir
+#-Dakka.remote.netty.tcp.port=2551
+#-Dakka.cluster.seed-nodes.0=akka.tcp://ClusterSystem@host1:2551
+#-Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@host2:2551
 
-ENTRYPOINT java -jar /download-app-0.0.1-SNAPSHOT.jar --tmp-dir=/tmp --storage-dir=/downloads --user=test --password=password --server.contextPath=/java
+ENTRYPOINT java \
+			-Dakka.remote.netty.tcp.port=2551 \
+			-Dakka.cluster.seed-nodes.0=akka.tcp://ClusterSystem@$SEED_NODE_0:2551 \
+			-Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@$SEED_NODE_1:2551 \
+			-jar /download-app-0.0.1-SNAPSHOT.jar \
+			--tmp-dir=/tmp \
+			--storage-dir=/downloads \
+			--user=test \
+			--password=password \ 
+			--server.contextPath=/java
+			
 EXPOSE 8080
+EXPOSE 2551

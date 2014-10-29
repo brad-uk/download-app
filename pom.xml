@@ -15,7 +15,7 @@
 	</parent>
 
 	<properties>
-		<akka.version>2.3.4</akka.version>
+		<akka.version>2.3.6</akka.version>
 	</properties>
 
 	<dependencies>
