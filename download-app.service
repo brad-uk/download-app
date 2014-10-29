@@ -1,0 +1,18 @@
+[Unit]
+Description=docker-registry
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill 172.17.8.1:5000/download-app
+ExecStartPre=-/usr/bin/docker rm 172.17.8.1:5000/download-app
+ExecStartPre=/usr/bin/docker pull 172.17.8.1:5000/download-app
+ExecStart=/usr/bin/docker run --name download-app -p 8080:8080 172.17.8.1:5000/download-app
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true
+
