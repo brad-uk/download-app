@@ -5,10 +5,12 @@ Requires=docker.service
 
 [Service]
 TimeoutStartSec=0
+EnvironmentFile=/etc/environment
 ExecStartPre=-/usr/bin/docker kill 172.17.42.1:5000/download-app
 ExecStartPre=-/usr/bin/docker rm 172.17.42.1:5000/download-app
 ExecStartPre=/usr/bin/docker pull 172.17.42.1:5000/download-app
-ExecStart=/usr/bin/docker run --name download-app -p 8080:8080 172.17.42.1:5000/download-app
+#note --net=host is required as akka will refuse cluster traffic address to the docker IP addr
+ExecStart=/usr/bin/docker run --name download-app --net=host -p 8080:8080 -p 2551:2551 -e NODE_ADDR=${COREOS_PUBLIC_IPV4} -e SEED_NODE_0=172.17.8.101 -e SEED_NODE_1=172.17.8.102 172.17.42.1:5000/download-app
 
 [Install]
 WantedBy=multi-user.target
