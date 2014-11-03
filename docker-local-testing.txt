@@ -1,0 +1,5 @@
+#
+# shift port mappings, container name, node port,  & http port to suit
+#
+
+docker run -d -p 192.168.1.174:2551:2551 -p 192.168.1.174:8080:8080 -v /tmp:/tmp -v /downloads:/tmp/downloads --name="app1" --net=host -e NODE_ADDR=192.168.1.174 -e NODE_PORT=2551 -e SEED_0_ADDR=192.168.1.174 -e SEED_0_PORT=2551 -e SEED_1_ADDR=192.168.1.174 -e SEED_1_PORT=2552 -e HTTP_PORT=8080 172.17.42.1:5000/download-app
