@@ -28,21 +28,18 @@ ENV PATH $PATH:$JAVA_HOME/bin
 #add ready built app jar
 copy target/download-app-0.0.1-SNAPSHOT.jar /download-app-0.0.1-SNAPSHOT.jar
 
-#-Dakka.remote.netty.tcp.port=2551
-#-Dakka.cluster.seed-nodes.0=akka.tcp://ClusterSystem@host1:2551
-#-Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@host2:2551
-
 ENTRYPOINT java \
-			-Dakka.remote.netty.tcp.hostname=$NODE_ADDR \
-			-Dakka.remote.netty.tcp.port=2551 \
-			-Dakka.cluster.seed-nodes.0=akka.tcp://ClusterSystem@$SEED_NODE_0:2551 \
-			-Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@$SEED_NODE_1:2551 \
-			-jar /download-app-0.0.1-SNAPSHOT.jar \
-			--tmp-dir=/tmp \
-			--storage-dir=/downloads \
-			--user=test \
-			--password=password \ 
-			--server.contextPath=/java
+		-Dakka.remote.netty.tcp.hostname=$NODE_ADDR \
+		-Dakka.remote.netty.tcp.port=$NODE_PORT \
+		-Dakka.cluster.seed-nodes.0=akka.tcp://ClusterSystem@$SEED_0_ADDR:$SEED_0_PORT \
+		-Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@$SEED_1_ADDR:$SEED_1_PORT \
+		-jar /download-app-0.0.1-SNAPSHOT.jar \
+		--tmp-dir=/tmp \
+		--storage-dir=/downloads \
+		--user=test \
+		--password=password \ 
+		--server.contextPath=/java \
+		--server.port=$HTTP_PORT
 			
 EXPOSE 8080
 EXPOSE 2551

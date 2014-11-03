@@ -1,2 +1,4 @@
 /target
 /.settings
+/.vagrant
+/server-jre-8u25-linux-x64.tar.gz
