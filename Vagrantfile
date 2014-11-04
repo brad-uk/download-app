@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "app%02d" % i do |a|
       a.vm.provider "docker" do |d|
-        d.build_dir = "."
+        d.image="app"
         d.ports = [http_port_host + ":" + http_port, akka_port_host + ":" + akka_port]
         d.name = "app%02d" % i
         d.volumes = ["/tmp:/tmp","/tmp/downloads:/downloads"]
