@@ -9,8 +9,9 @@ EnvironmentFile=/etc/environment
 ExecStartPre=-/usr/bin/docker kill 172.17.42.1:5000/download-app
 ExecStartPre=-/usr/bin/docker rm 172.17.42.1:5000/download-app
 ExecStartPre=/usr/bin/docker pull 172.17.42.1:5000/download-app
-#note --net=host is required as akka will refuse cluster traffic address to the docker IP addr
-ExecStart=/usr/bin/docker run -v /tmp -v /downloads --net=host -p 8080:8080 -p 2551:2551 -e NODE_ADDR=${COREOS_PUBLIC_IPV4} -e NODE_PORT=2551 -e SEED_0_ADDR=172.17.8.101 -e SEED_0_PORT=2551 -e SEED_1_ADDR=172.17.8.102 -e SEED_1_PORT=2551 -e HTTP_PORT=8080 172.17.42.1:5000/download-app
+#note --net=host is required when using akka 2.3 to force use of host ip addr instead of container
+#new property bind-host in akka 2.4-snapshot fixes this
+ExecStart=/usr/bin/docker run -v /tmp -v /downloads -p 8080:8080 -p 2551:2551 -e NODE_ADDR=${COREOS_PUBLIC_IPV4} -e NODE_PORT=2551 -e SEED_0_ADDR=172.17.8.101 -e SEED_0_PORT=2551 -e SEED_1_ADDR=172.17.8.102 -e SEED_1_PORT=2551 -e HTTP_PORT=8080 172.17.42.1:5000/download-app
 
 [Install]
 WantedBy=multi-user.target

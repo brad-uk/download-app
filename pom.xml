@@ -2,6 +2,21 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
+	<repositories>
+		<repository>
+			<id>akka-snapshots</id>
+			<url>http://repo.akka.io/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<layout>default</layout>
+		</repository>
+	</repositories>
 
 	<groupId>uk.co.javawork</groupId>
 	<artifactId>download-app</artifactId>
@@ -15,7 +30,7 @@
 	</parent>
 
 	<properties>
-		<akka.version>2.3.6</akka.version>
+		<akka.version>2.4-SNAPSHOT</akka.version>
 	</properties>
 
 	<dependencies>
@@ -74,17 +89,17 @@
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-actor_2.11</artifactId>
+			<artifactId>akka-actor_2.10</artifactId>
 			<version>${akka.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-cluster_2.11</artifactId>
+			<artifactId>akka-cluster_2.10</artifactId>
 			<version>${akka.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-contrib_2.11</artifactId>
+			<artifactId>akka-contrib_2.10</artifactId>
 			<version>${akka.version}</version>
 		</dependency>
 		<dependency>
