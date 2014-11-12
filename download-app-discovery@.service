@@ -1,0 +1,18 @@
+[Unit]
+Description=download-app-discovery@%i
+# Stop this unit when we stop our application
+BindsTo=download-app@%i.service
+ 
+[Service]
+User=core
+EnvironmentFile=/etc/environment
+# Every 45 seconds, set the /announce/services/download-app/http/%i key to IP:PORT
+#intent is to use this for ha-proxy or similar balancing the http side
+# The key expires after 60 seconds. Thus, if the app goes down the key will be removed.
+ExecStart=/bin/sh -c "while true; do etcdctl set /announce/services/download-app/http/%i ${COREOS_PRIVATE_IPV4}:8080 --ttl 60; sleep 45; done"
+ExecStop=/usr/bin/etcdctl rm /announce/services/download-app/http/%i
+ 
+[X-Fleet]
+# This must be scheduled on the same machine as the corresponding application
+MachineOf=download-app@%i.service
+
